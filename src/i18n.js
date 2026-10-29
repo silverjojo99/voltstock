@@ -124,6 +124,9 @@ const messages = {
     "category.Audio": "Audio",
     "category.Accessories": "Accessories",
     "category.Gaming": "Gaming",
+    "category.LCD": "LCD",
+    "category.Flex": "Flex",
+    "category.Batterie": "Battery",
   },
   fr: {
     language: "Langue",
@@ -250,6 +253,9 @@ const messages = {
     "category.Audio": "Audio",
     "category.Accessories": "Accessoires",
     "category.Gaming": "Jeux vidéo",
+    "category.LCD": "LCD",
+    "category.Flex": "Flex",
+    "category.Batterie": "Batterie",
   },
 };
 

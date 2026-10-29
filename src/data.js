@@ -1,4 +1,4 @@
-export const CATEGORIES = ["Computers", "Phones", "Audio", "Accessories", "Gaming"];
+export const CATEGORIES = ["Computers", "Phones", "Audio", "Accessories", "Gaming", "LCD", "Flex", "Batterie"];
 
 export const LOW_STOCK_THRESHOLD = 5;
 
