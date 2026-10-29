@@ -5,7 +5,7 @@ Voltstock uses one shared inventory for every authenticated user in a Supabase p
 ## 1. Create the project and database
 
 1. Create a Supabase project and open its SQL Editor.
-2. Run the complete SQL in [`supabase/migrations/20261021000000_shared_inventory.sql`](./supabase/migrations/20261021000000_shared_inventory.sql).
+2. Run the SQL files in `supabase/migrations/` in timestamp order. For an existing project, run any migration added after the one you have already applied.
 3. In **Project Settings → API**, copy the project URL and the public anon key.
 4. Copy `.env.example` to `.env.local` and fill in the two values:
 
@@ -25,7 +25,7 @@ The migration creates the shared products table, user profiles, an append-only a
 3. In **Authentication → Users**, invite each team member by email. Do not add a public sign-up form to the app.
 4. Team members can use **Set or reset your password** on the sign-in screen to get a password link. After setting it, they can sign in with their invited email.
 
-Only invited, authenticated users can access the inventory. Every such user sees and can edit the same products. The database records the authenticated user, operation, product snapshot, and time for each create, edit, or delete; the app shows the latest 100 changes and identifies the last editor on each product.
+Only invited, authenticated users can access the inventory. Every such user sees and can edit the same products. The database records the authenticated user, operation, product snapshot, and time for each create, edit, or delete; the app shows the latest 100 changes and identifies the last editor on each product. The stock-movement summary totals units received and sent out from recorded stock changes.
 
 ## 3. Deploy
 

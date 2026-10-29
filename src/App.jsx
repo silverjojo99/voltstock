@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
+  ArrowDownLeft,
+  ArrowUpRight,
   BarChart3,
   Box,
   Clock3,
@@ -150,6 +152,7 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [profiles, setProfiles] = useState({});
   const [activity, setActivity] = useState([]);
+  const [movementTotals, setMovementTotals] = useState({ items_in: 0, items_out: 0 });
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(() => navigator.onLine);
   const [loadError, setLoadError] = useState("");
@@ -220,6 +223,7 @@ export default function App() {
       setProducts([]);
       setProfiles({});
       setActivity([]);
+      setMovementTotals({ items_in: 0, items_out: 0 });
       setLoading(false);
       return undefined;
     }
@@ -234,9 +238,10 @@ export default function App() {
         .select("id,product_id,product_name,operation,before_data,after_data,actor_id,occurred_at")
         .order("occurred_at", { ascending: false })
         .limit(100),
-    ]).then(([productResult, profileResult, activityResult]) => {
+      supabase.from("inventory_movement_totals").select("items_in,items_out").single(),
+    ]).then(([productResult, profileResult, activityResult, movementResult]) => {
       if (!active) return;
-      const failed = [productResult, profileResult, activityResult].find((result) => result.error);
+      const failed = [productResult, profileResult, activityResult, movementResult].find((result) => result.error);
       if (failed) throw failed.error;
       setProducts((productResult.data || []).map((product) => ({
         ...product,
@@ -245,6 +250,10 @@ export default function App() {
       })));
       setProfiles(Object.fromEntries((profileResult.data || []).map((profile) => [profile.id, profile])));
       setActivity(activityResult.data || []);
+      setMovementTotals({
+        items_in: Number(movementResult.data.items_in),
+        items_out: Number(movementResult.data.items_out),
+      });
     }).catch((error) => {
       if (active) setLoadError(error.message || t("error.unableLoadInventory"));
     }).finally(() => {
@@ -559,8 +568,28 @@ export default function App() {
           <div className="activity-card__head">
             <div>
               <span className="eyebrow">{t("activity.team")}</span>
-              <h2>{t("activity.recent")}</h2>
+              <h2>{t("activity.movements")}</h2>
             </div>
+            <span className="muted small">{t("activity.movementTotals")}</span>
+          </div>
+          <div className="movement-stats">
+            <StatCard
+              tone="green"
+              icon={<ArrowDownLeft size={30} strokeWidth={2} />}
+              label={t("activity.itemsIn")}
+              value={movementTotals.items_in}
+              hint={t("activity.itemsInHint")}
+            />
+            <StatCard
+              tone="amber"
+              icon={<ArrowUpRight size={30} strokeWidth={2} />}
+              label={t("activity.itemsOut")}
+              value={movementTotals.items_out}
+              hint={t("activity.itemsOutHint")}
+            />
+          </div>
+          <div className="activity-card__head activity-card__head--recent">
+            <h2>{t("activity.recent")}</h2>
             <span className="muted small">{t("activity.latest")}</span>
           </div>
           {activity.length === 0 ? (
