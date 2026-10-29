@@ -279,7 +279,7 @@ export function translate(language, key, values = {}) {
 export function formatMoney(amount, language) {
   return amount.toLocaleString(language === "fr" ? "fr-FR" : "en-US", {
     style: "currency",
-    currency: "USD",
+    currency: "MAD",
     maximumFractionDigits: 0,
   });
 }

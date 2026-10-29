@@ -18,6 +18,8 @@ Voltstock uses one shared inventory for every authenticated user in a Supabase p
 
 The migration creates the shared products table, user profiles, an append-only activity log, photo storage rules, row-level security policies, and realtime subscriptions. It seeds the sample inventory only where a SKU does not already exist, so it is safe to run again.
 
+The later `20261029020000_import_eb_shop_inventory.sql` migration imports the EB Shop spreadsheet inventory. It combines repeated product names, applies the workbook's `New Price` and `New Qty` formulas, and assigns import SKUs. Voltstock displays all product prices in Moroccan dirhams (MAD/DH).
+
 ## 2. Invite team members
 
 1. In Supabase Authentication settings, leave email/password sign-in enabled and disable public sign-ups.

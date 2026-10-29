@@ -22,4 +22,4 @@ export function getStatus(stock) {
 export const STATUS_LABEL = { in: "In stock", low: "Low stock", out: "Out of stock" };
 
 export const money = (n) =>
-  n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  n.toLocaleString("en-US", { style: "currency", currency: "MAD", maximumFractionDigits: 0 });

@@ -166,7 +166,7 @@ export default function ProductPanel({ open, product, onClose, onSave, language,
               <label className="field">
                 <span className="field__label">{t("panel.retailPrice")}</span>
                 <div className="prefix">
-                  <span>$</span>
+                  <span>DH</span>
                   <input
                     type="number"
                     min="0"
