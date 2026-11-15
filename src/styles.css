@@ -1,13 +1,13 @@
 :root {
   --navy: #45392e;
   --navy-2: #5a493a;
-  --blue: #9a6b3f;
-  --blue-dark: #805632;
+  --blue: #87643e;
+  --blue-dark: #704e2d;
   --ink: #30291f;
   --muted: #827765;
-  --line: #e7dece;
-  --bg: #f5f0e6;
-  --card: #fffdf8;
+  --line: #d3bf91;
+  --bg: #E6D3A8;
+  --card: #fffaf0;
   --radius: 14px;
   --sidebar-w: 248px;
   --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -158,7 +158,7 @@ button { cursor: pointer; }
   width: 72px; height: 72px; border-radius: 16px; flex: none;
   display: grid; place-items: center;
 }
-.stat__icon--blue { background: #efe3d2; color: var(--blue); }
+.stat__icon--blue { background: #f3e7c8; color: var(--blue); }
 .stat__icon--purple { background: #eee5db; color: #806858; }
 .stat__icon--amber { background: #fff1d6; color: #e8960c; }
 .stat__icon--green { background: #dcf5e8; color: #12935a; }
@@ -175,7 +175,7 @@ button { cursor: pointer; }
 .page-link:hover { border-color: #d4b895; box-shadow: 0 8px 20px rgba(69, 57, 46, 0.08); transform: translateY(-1px); }
 .page-link__icon, .category-card__icon {
   width: 40px; height: 40px; flex: none; display: grid; place-items: center;
-  border-radius: 11px; color: var(--blue); background: #efe3d2;
+  border-radius: 11px; color: var(--blue); background: #f3e7c8;
 }
 .page-link__copy { display: flex; flex-direction: column; min-width: 0; flex: 1; gap: 3px; }
 .page-link__copy strong { font-size: 13px; }
@@ -228,7 +228,7 @@ select:focus, .field input:focus { border-color: var(--blue); box-shadow: 0 0 0 
   border-bottom: 1px solid var(--line);
 }
 .row:last-child { border-bottom: 0; }
-.row:not(.row--head):hover { background: #faf6ee; }
+.row:not(.row--head):hover { background: #fff8e8; }
 .row--head {
   padding-top: 12px; padding-bottom: 12px;
   font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
@@ -303,11 +303,11 @@ select:focus, .field input:focus { border-color: var(--blue); box-shadow: 0 0 0 
 
 .dropzone {
   display: flex; align-items: center; gap: 18px;
-  padding: 14px; border: 1.5px dashed #d7cbb8; border-radius: 12px; background: #faf6ee;
+  padding: 14px; border: 1.5px dashed #d3bf91; border-radius: 12px; background: #fff8e8;
 }
 .dropzone__preview {
   width: 88px; height: 88px; flex: none; border-radius: 10px; overflow: hidden;
-  background: #eee6d9; color: #8b806e; display: grid; place-items: center;
+  background: #f3e7c8; color: #817456; display: grid; place-items: center;
 }
 .dropzone__preview img { width: 100%; height: 100%; object-fit: cover; }
 .dropzone__text { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
@@ -320,7 +320,7 @@ select:focus, .field input:focus { border-color: var(--blue); box-shadow: 0 0 0 
   display: grid;
   place-items: center;
   padding: 24px;
-  background: radial-gradient(ellipse at 50% 0%, #e9ddca 0, var(--bg) 58%);
+  background: radial-gradient(ellipse at 50% 0%, #f3e7c8 0, var(--bg) 58%);
 }
 .auth-card {
   width: min(100%, 440px);
@@ -337,7 +337,7 @@ select:focus, .field input:focus { border-color: var(--blue); box-shadow: 0 0 0 
   margin-top: 20px;
   padding: 14px;
   border-radius: 10px;
-  background: #f3ecdf;
+  background: #f3e7c8;
   color: #5d5142;
   font-size: 12px;
   line-height: 1.6;
@@ -407,7 +407,7 @@ select:focus, .field input:focus { border-color: var(--blue); box-shadow: 0 0 0 
   place-items: center;
   border-radius: 10px;
   color: var(--blue);
-  background: #efe3d2;
+  background: #f3e7c8;
 }
 .activity-item__body { min-width: 0; flex: 1; font-size: 12px; }
 .activity-item__body > strong { font-size: 12px; }
