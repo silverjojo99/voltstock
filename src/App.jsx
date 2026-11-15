@@ -67,10 +67,8 @@ function Sidebar({ open, user, profile, page, onNavigate, onSignOut, t }) {
   return (
     <aside className={`sidebar ${open ? "sidebar--open" : ""}`}>
       <div className="brand">
-        <div className="brand__logo">
-          <Box size={22} color="#fff" strokeWidth={1.8} />
-        </div>
-        <span className="brand__name">Voltstock</span>
+        <img className="brand__logo" src="/electro-bejaad-logo.jpg" alt="ELECTRO BEJAAD logo" />
+        <span className="brand__name">ELECTRO BEJAAD</span>
       </div>
       <nav className="nav">
         {[
@@ -176,7 +174,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.lang = language;
-    document.title = `Voltstock · ${t(`page.${page}`)}`;
+    document.title = `ELECTRO BEJAAD · ${t(`page.${page}`)}`;
     const description = document.querySelector('meta[name="description"]');
     if (description) {
       description.content = language === "fr"
@@ -412,7 +410,8 @@ export default function App() {
         <button className="icon-btn" aria-label={t("nav.openMenu")} onClick={() => setMenuOpen((value) => !value)}>
           <Menu size={22} />
         </button>
-        <span className="topbar__title">Voltstock</span>
+        <img className="topbar__logo" src="/electro-bejaad-logo.jpg" alt="ELECTRO BEJAAD logo" />
+        <span className="topbar__title">ELECTRO BEJAAD</span>
         <LanguageSwitcher language={language} onChange={setLanguage} />
       </header>
 

@@ -1,6 +1,6 @@
 # Supabase setup
 
-Voltstock uses one shared inventory for every authenticated user in a Supabase project. The browser only receives the project URL and public anon key; never put a service-role key in this app.
+ELECTRO BEJAAD uses one shared inventory for every authenticated user in a Supabase project. The browser only receives the project URL and public anon key; never put a service-role key in this app.
 
 ## 1. Create the project and database
 
@@ -18,7 +18,7 @@ Voltstock uses one shared inventory for every authenticated user in a Supabase p
 
 The migration creates the shared products table, user profiles, an append-only activity log, photo storage rules, row-level security policies, and realtime subscriptions. It seeds the sample inventory only where a SKU does not already exist, so it is safe to run again.
 
-The later `20261029020000_import_eb_shop_inventory.sql` migration imports the EB Shop spreadsheet inventory. It combines repeated product names, applies the workbook's `New Price` and `New Qty` formulas, and assigns import SKUs. Voltstock displays all product prices in Moroccan dirhams (MAD/DH).
+The later `20261029020000_import_eb_shop_inventory.sql` migration imports the EB Shop spreadsheet inventory. It combines repeated product names, applies the workbook's `New Price` and `New Qty` formulas, and assigns import SKUs. ELECTRO BEJAAD displays all product prices in Moroccan dirhams (MAD/DH).
 
 ## 2. Invite team members
 
@@ -35,6 +35,6 @@ Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as build-time environment v
 
 Product photos use a public-read storage bucket because inventory images are displayed to all team members. Upload, update, and delete operations still require an authenticated user.
 
-Voltstock is also installable as a Progressive Web App when served over HTTPS (localhost is allowed for development). The service worker caches the app shell and static assets so the app can open offline. Shared inventory, sign-in, photos, and edits require a connection; edits are disabled while offline, and reconnecting refreshes shared data.
+ELECTRO BEJAAD is also installable as a Progressive Web App when served over HTTPS (localhost is allowed for development). The service worker caches the app shell and static assets so the app can open offline. Shared inventory, sign-in, photos, and edits require a connection; edits are disabled while offline, and reconnecting refreshes shared data.
 
-On supported browsers, use the browser's **Install app** or **Add to Home Screen** command to install Voltstock. App updates are applied automatically when a new version is deployed.
+On supported browsers, use the browser's **Install app** or **Add to Home Screen** command to install ELECTRO BEJAAD. App updates are applied automatically when a new version is deployed.

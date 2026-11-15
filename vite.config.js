@@ -8,14 +8,14 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
-        "voltstock-icon.svg",
+        "electro-bejaad-logo.jpg",
         "pwa-192x192.png",
         "pwa-512x512.png",
         "apple-touch-icon.png",
       ],
       manifest: {
-        name: "Voltstock Inventory",
-        short_name: "Voltstock",
+        name: "ELECTRO BEJAAD",
+        short_name: "ELECTRO BEJAAD",
         description: "Shared inventory management for your team.",
         theme_color: "#0f1a33",
         background_color: "#f4f6fa",

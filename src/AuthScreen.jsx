@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Box } from "lucide-react";
 import { supabase } from "./supabase.js";
 import LanguageSwitcher from "./LanguageSwitcher.jsx";
 
@@ -51,10 +50,8 @@ export default function AuthScreen({ configured, recoveryMode, onRecoveryComplet
       <div className="auth-language"><LanguageSwitcher language={language} onChange={onLanguageChange} /></div>
       <section className="auth-card">
         <div className="auth-brand">
-          <span className="brand__logo">
-            <Box size={22} color="#fff" strokeWidth={1.8} />
-          </span>
-          <span className="brand__name">Voltstock</span>
+          <img className="brand__logo" src="/electro-bejaad-logo.jpg" alt="ELECTRO BEJAAD logo" />
+          <span className="brand__name">ELECTRO BEJAAD</span>
         </div>
         <span className="eyebrow">{t("auth.sharedOperations")}</span>
         <h1>{configured ? heading : t("auth.connectProject")}</h1>
