@@ -55,7 +55,7 @@ function Thumb({ product }) {
   );
 }
 
-function Sidebar({ open, user, profile, onNavigate, onActivity, onSignOut, t }) {
+function Sidebar({ open, user, profile, page, onNavigate, onSignOut, t }) {
   const name = profile?.display_name || user.email || t("nav.teamMember");
   const initials = name
     .split(/[\s@._-]+/)
@@ -73,14 +73,22 @@ function Sidebar({ open, user, profile, onNavigate, onActivity, onSignOut, t }) 
         <span className="brand__name">Voltstock</span>
       </div>
       <nav className="nav">
-        <button className="nav__item nav__item--active" onClick={onNavigate}>
-          <Box size={20} strokeWidth={1.8} />
-          {t("nav.inventory")}
-        </button>
-        <button className="nav__item" onClick={onActivity}>
-          <Activity size={20} strokeWidth={1.8} />
-          {t("nav.activity")}
-        </button>
+        {[
+          ["overview", BarChart3, "nav.overview"],
+          ["stock", Box, "nav.stock"],
+          ["categories", Search, "nav.categories"],
+          ["activity", Activity, "nav.activity"],
+        ].map(([pageKey, Icon, labelKey]) => (
+          <button
+            className={`nav__item ${page === pageKey ? "nav__item--active" : ""}`}
+            onClick={() => onNavigate(pageKey)}
+            aria-current={page === pageKey ? "page" : undefined}
+            key={pageKey}
+          >
+            <Icon size={20} strokeWidth={1.8} />
+            {t(labelKey)}
+          </button>
+        ))}
       </nav>
       <div className="user">
         <div className="user__avatar">{initials || "U"}</div>
@@ -161,13 +169,14 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
+  const [page, setPage] = useState("overview");
   const [panelOpen, setPanelOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.lang = language;
-    document.title = language === "fr" ? "Voltstock · Inventaire" : "Voltstock · Inventory";
+    document.title = `Voltstock · ${t(`page.${page}`)}`;
     const description = document.querySelector('meta[name="description"]');
     if (description) {
       description.content = language === "fr"
@@ -179,7 +188,7 @@ export default function App() {
     } catch {
       // Language selection still works for this session if storage is unavailable.
     }
-  }, [language]);
+  }, [language, page, t]);
 
   useEffect(() => {
     const updateOnline = () => {
@@ -363,8 +372,8 @@ export default function App() {
     if (error) setActionError(t("error.couldNotSignOut", { message: error.message }));
   };
 
-  const scrollToActivity = useCallback(() => {
-    document.getElementById("activity")?.scrollIntoView({ behavior: "smooth" });
+  const navigate = useCallback((nextPage) => {
+    setPage(nextPage);
     setMenuOpen(false);
   }, []);
 
@@ -411,9 +420,9 @@ export default function App() {
         open={menuOpen}
         user={session.user}
         profile={currentProfile}
+        page={page}
         t={t}
-        onNavigate={() => setMenuOpen(false)}
-        onActivity={scrollToActivity}
+        onNavigate={navigate}
         onSignOut={handleSignOut}
       />
       {menuOpen && <div className="scrim" onClick={() => setMenuOpen(false)} />}
@@ -422,14 +431,16 @@ export default function App() {
         <div className="page-head">
           <div>
             <span className="eyebrow">{t("page.storeOperations")}</span>
-            <h1>{t("page.inventory")}</h1>
-            <p className="muted">{t("page.sharedStock")}</p>
+            <h1>{t(`page.${page}`)}</h1>
+            <p className="muted">{t(`page.${page}Description`)}</p>
           </div>
           <div className="page-actions">
             <div className="page-language"><LanguageSwitcher language={language} onChange={setLanguage} /></div>
-            <button className="btn btn--primary" onClick={openAdd} disabled={!online}>
-              <Plus size={18} /> {t("page.addItem")}
-            </button>
+            {(page === "stock" || page === "categories") && (
+              <button className="btn btn--primary" onClick={openAdd} disabled={!online}>
+                <Plus size={18} /> {t("page.addItem")}
+              </button>
+            )}
           </div>
         </div>
 
@@ -449,41 +460,92 @@ export default function App() {
         )}
         {loading && <p className="load-note" role="status">{t("page.syncing")}</p>}
 
-        <section className="stats">
-          <StatCard
-            tone="blue"
-            icon={<Box size={30} strokeWidth={1.8} />}
-            label={t("stats.totalProducts")}
-            value={products.length}
-            hint={t("stats.acrossCategories", { count: stats.categories })}
-          />
-          <StatCard
-            tone="purple"
-            icon={<BarChart3 size={30} strokeWidth={2} />}
-            label={t("stats.unitsInStock")}
-            value={stats.units}
-            hint={t("stats.availableToSell")}
-          />
-          <StatCard
-            tone="amber"
-            icon={<AlertTriangle size={30} strokeWidth={1.8} />}
-            label={t("stats.needsAttention")}
-            value={stats.attention}
-            hint={t("stats.lowOrOut")}
-          />
-          <StatCard
-            tone="green"
-            icon={<DollarSign size={30} strokeWidth={2} />}
-            label={t("stats.inventoryValue")}
-            value={formatMoney(stats.value, language)}
-            hint={t("stats.atRetailPrice")}
-          />
-        </section>
+        {page === "overview" && (
+          <>
+            <section className="stats">
+              <StatCard
+                tone="blue"
+                icon={<Box size={30} strokeWidth={1.8} />}
+                label={t("stats.totalProducts")}
+                value={products.length}
+                hint={t("stats.acrossCategories", { count: stats.categories })}
+              />
+              <StatCard
+                tone="purple"
+                icon={<BarChart3 size={30} strokeWidth={2} />}
+                label={t("stats.unitsInStock")}
+                value={stats.units}
+                hint={t("stats.availableToSell")}
+              />
+              <StatCard
+                tone="amber"
+                icon={<AlertTriangle size={30} strokeWidth={1.8} />}
+                label={t("stats.needsAttention")}
+                value={stats.attention}
+                hint={t("stats.lowOrOut")}
+              />
+              <StatCard
+                tone="green"
+                icon={<DollarSign size={30} strokeWidth={2} />}
+                label={t("stats.inventoryValue")}
+                value={formatMoney(stats.value, language)}
+                hint={t("stats.atRetailPrice")}
+              />
+            </section>
+            <section className="page-links" aria-label={t("page.quickAccess")}>
+              {[
+                ["stock", Box, products.length, "page.stockLink"],
+                ["categories", Search, stats.categories, "page.categoryLink"],
+                ["activity", Activity, activity.length, "page.activityLink"],
+              ].map(([target, Icon, count, labelKey]) => (
+                <button className="page-link card" onClick={() => navigate(target)} key={target}>
+                  <span className="page-link__icon"><Icon size={21} /></span>
+                  <span className="page-link__copy">
+                    <strong>{t(labelKey)}</strong>
+                    <span>{t("page.recordsCount", { count })}</span>
+                  </span>
+                  <ArrowUpRight size={18} className="page-link__arrow" />
+                </button>
+              ))}
+            </section>
+          </>
+        )}
 
-        <section className="card table-card">
+        {page === "categories" && (
+          <section className="category-grid" aria-label={t("nav.categories")}>
+            <button
+              className={`category-card card ${category === "All" ? "category-card--active" : ""}`}
+              onClick={() => setCategory("All")}
+              aria-pressed={category === "All"}
+            >
+              <span className="category-card__name">{t("table.allCategories")}</span>
+              <span className="category-card__count">{products.length}</span>
+              <span className="category-card__units">{t("table.itemsLabel")}</span>
+            </button>
+            {CATEGORIES.map((item) => {
+              const items = products.filter((product) => product.category === item);
+              const Icon = CATEGORY_ICON[item] || Box;
+              return (
+                <button
+                  className={`category-card card ${category === item ? "category-card--active" : ""}`}
+                  onClick={() => setCategory(item)}
+                  aria-pressed={category === item}
+                  key={item}
+                >
+                  <span className="category-card__icon"><Icon size={20} /></span>
+                  <span className="category-card__name">{t(`category.${item}`)}</span>
+                  <span className="category-card__count">{items.length}</span>
+                  <span className="category-card__units">{t("table.itemsLabel")}</span>
+                </button>
+              );
+            })}
+          </section>
+        )}
+
+        {(page === "stock" || page === "categories") && <section className="card table-card">
           <div className="table-card__head">
             <h2>
-              {t("table.allProducts")}{" "}
+              {page === "categories" && category !== "All" ? t(`category.${category}`) : t("table.allProducts")}{" "}
               <span className="muted small">
                 {t("table.itemsCount", { visible: visible.length, total: products.length })}
               </span>
@@ -562,9 +624,9 @@ export default function App() {
               );
             })}
           </div>
-        </section>
+        </section>}
 
-        <section className="card activity-card" id="activity">
+        {page === "activity" && <section className="card activity-card">
           <div className="activity-card__head">
             <div>
               <span className="eyebrow">{t("activity.team")}</span>
@@ -615,7 +677,7 @@ export default function App() {
               })}
             </ol>
           )}
-        </section>
+        </section>}
       </main>
 
       <ProductPanel
