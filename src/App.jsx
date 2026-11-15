@@ -67,7 +67,7 @@ function Sidebar({ open, user, profile, page, onNavigate, onSignOut, t }) {
   return (
     <aside className={`sidebar ${open ? "sidebar--open" : ""}`}>
       <div className="brand">
-        <img className="brand__logo" src="/electro-bejaad-logo.jpg" alt="ELECTRO BEJAAD logo" />
+        <img className="brand__logo" src="/electro-bejaad-logo.png" alt="ELECTRO BEJAAD logo" />
         <span className="brand__name">ELECTRO BEJAAD</span>
       </div>
       <nav className="nav">
@@ -410,7 +410,7 @@ export default function App() {
         <button className="icon-btn" aria-label={t("nav.openMenu")} onClick={() => setMenuOpen((value) => !value)}>
           <Menu size={22} />
         </button>
-        <img className="topbar__logo" src="/electro-bejaad-logo.jpg" alt="ELECTRO BEJAAD logo" />
+        <img className="topbar__logo" src="/electro-bejaad-logo.png" alt="ELECTRO BEJAAD logo" />
         <span className="topbar__title">ELECTRO BEJAAD</span>
         <LanguageSwitcher language={language} onChange={setLanguage} />
       </header>

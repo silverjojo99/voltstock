@@ -50,7 +50,7 @@ export default function AuthScreen({ configured, recoveryMode, onRecoveryComplet
       <div className="auth-language"><LanguageSwitcher language={language} onChange={onLanguageChange} /></div>
       <section className="auth-card">
         <div className="auth-brand">
-          <img className="brand__logo" src="/electro-bejaad-logo.jpg" alt="ELECTRO BEJAAD logo" />
+          <img className="brand__logo" src="/electro-bejaad-logo.png" alt="ELECTRO BEJAAD logo" />
           <span className="brand__name">ELECTRO BEJAAD</span>
         </div>
         <span className="eyebrow">{t("auth.sharedOperations")}</span>
