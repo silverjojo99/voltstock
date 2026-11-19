@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -16,6 +16,7 @@ import {
   Menu,
   Pencil,
   Plus,
+  QrCode,
   Search,
   Smartphone,
   Trash2,
@@ -26,6 +27,8 @@ import AuthScreen from "./AuthScreen.jsx";
 import { getProductPhotoUrl, isSupabaseConfigured, supabase } from "./supabase.js";
 import LanguageSwitcher from "./LanguageSwitcher.jsx";
 import { formatMoney, translate } from "./i18n.js";
+
+const QrTools = lazy(() => import("./QrTools.jsx"));
 
 const CATEGORY_ICON = {
   Computers: Laptop,
@@ -76,6 +79,7 @@ function Sidebar({ open, user, profile, page, onNavigate, onSignOut, t }) {
           ["stock", Box, "nav.stock"],
           ["categories", Search, "nav.categories"],
           ["activity", Activity, "nav.activity"],
+          ["qr", QrCode, "nav.qr"],
         ].map(([pageKey, Icon, labelKey]) => (
           <button
             className={`nav__item ${page === pageKey ? "nav__item--active" : ""}`}
@@ -625,58 +629,82 @@ export default function App() {
           </div>
         </section>}
 
-        {page === "activity" && <section className="card activity-card">
-          <div className="activity-card__head">
-            <div>
-              <span className="eyebrow">{t("activity.team")}</span>
-              <h2>{t("activity.movements")}</h2>
-            </div>
-            <span className="muted small">{t("activity.movementTotals")}</span>
-          </div>
-          <div className="movement-stats">
-            <StatCard
-              tone="green"
-              icon={<ArrowDownLeft size={30} strokeWidth={2} />}
-              label={t("activity.itemsIn")}
-              value={movementTotals.items_in}
-              hint={t("activity.itemsInHint")}
-            />
-            <StatCard
-              tone="amber"
-              icon={<ArrowUpRight size={30} strokeWidth={2} />}
-              label={t("activity.itemsOut")}
-              value={movementTotals.items_out}
-              hint={t("activity.itemsOutHint")}
-            />
-          </div>
-          <div className="activity-card__head activity-card__head--recent">
-            <h2>{t("activity.recent")}</h2>
-            <span className="muted small">{t("activity.latest")}</span>
-          </div>
-          {activity.length === 0 ? (
-            <div className="empty">{t("activity.empty")}</div>
-          ) : (
-            <ol className="activity-list">
-              {activity.map((entry) => {
-                const actor = profiles[entry.actor_id];
-                const actorName = actor?.display_name || actor?.email || t("activity.unknownUser");
-                return (
-                  <li className="activity-item" key={entry.id}>
-                    <div className="activity-item__icon"><Clock3 size={17} /></div>
-                    <div className="activity-item__body">
-                      <strong>{actorName}</strong>
-                      {actor?.email && actor.email !== actorName && <span className="activity-item__email">{actor.email}</span>}
-                      <p><b>{entry.product_name}</b> · {activityDetails(entry, language, t)}</p>
-                    </div>
-                    <time dateTime={entry.occurred_at}>
-                      {new Date(entry.occurred_at).toLocaleString(language === "fr" ? "fr-FR" : "en-US")}
-                    </time>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </section>}
+        {page === "activity" && (
+          <>
+            <section className="card activity-summary" aria-labelledby="activity-summary-title">
+              <div className="activity-card__head">
+                <div>
+                  <span className="eyebrow">{t("activity.team")}</span>
+                  <h2 id="activity-summary-title">{t("activity.movements")}</h2>
+                </div>
+                <span className="muted small">{t("activity.movementTotals")}</span>
+              </div>
+              <div className="movement-stats">
+                <StatCard
+                  tone="green"
+                  icon={<ArrowDownLeft size={30} strokeWidth={2} />}
+                  label={t("activity.itemsIn")}
+                  value={movementTotals.items_in}
+                  hint={t("activity.itemsInHint")}
+                />
+                <StatCard
+                  tone="amber"
+                  icon={<ArrowUpRight size={30} strokeWidth={2} />}
+                  label={t("activity.itemsOut")}
+                  value={movementTotals.items_out}
+                  hint={t("activity.itemsOutHint")}
+                />
+              </div>
+            </section>
+
+            <section className="card activity-card" aria-labelledby="activity-recent-title">
+              <div className="activity-card__head activity-card__head--recent">
+                <div>
+                  <span className="eyebrow">{t("activity.team")}</span>
+                  <h2 id="activity-recent-title">{t("activity.recent")}</h2>
+                </div>
+                <span className="activity-period">{t("activity.latest")}</span>
+              </div>
+              {activity.length === 0 ? (
+                <div className="empty">{t("activity.empty")}</div>
+              ) : (
+                <ol className="activity-list">
+                  {activity.map((entry) => {
+                    const actor = profiles[entry.actor_id];
+                    const actorName = actor?.display_name || actor?.email || t("activity.unknownUser");
+                    const occurredAt = new Date(entry.occurred_at);
+                    const locale = language === "fr" ? "fr-FR" : "en-US";
+                    return (
+                      <li className="activity-item" key={entry.id}>
+                        <div className="activity-item__icon"><Clock3 size={17} /></div>
+                        <div className="activity-item__body">
+                          <div className="activity-item__actor">
+                            <strong>{actorName}</strong>
+                            {actor?.email && actor.email !== actorName && (
+                              <span className="activity-item__email">{actor.email}</span>
+                            )}
+                          </div>
+                          <p className="activity-item__product">{entry.product_name}</p>
+                          <p className="activity-item__change">{activityDetails(entry, language, t)}</p>
+                        </div>
+                        <time dateTime={entry.occurred_at}>
+                          <span>{occurredAt.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}</span>
+                          <span>{occurredAt.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })}</span>
+                        </time>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </section>
+          </>
+        )}
+
+        {page === "qr" && (
+          <Suspense fallback={<p className="load-note" role="status">{t("qr.loading")}</p>}>
+            <QrTools t={t} />
+          </Suspense>
+        )}
       </main>
 
       <ProductPanel
