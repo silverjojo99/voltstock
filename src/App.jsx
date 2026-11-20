@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   BarChart3,
   Box,
-  Clock3,
   DollarSign,
   Gamepad2,
   Headphones,
@@ -37,15 +36,6 @@ const CATEGORY_ICON = {
   Accessories: Keyboard,
   Gaming: Gamepad2,
 };
-
-const ACTIVITY_FIELDS = [
-  ["name", "activity.name"],
-  ["sku", "activity.sku"],
-  ["category", "activity.category"],
-  ["price", "activity.price"],
-  ["stock", "activity.stock"],
-  ["photo_path", "activity.photo"],
-];
 
 function Thumb({ product }) {
   if (product.photo) return <img className="thumb" src={product.photo} alt={product.name} />;
@@ -119,25 +109,6 @@ function StatCard({ icon, tone, label, value, hint }) {
   );
 }
 
-function activityDetails(entry, language, t) {
-  if (entry.operation === "INSERT") return t("activity.added");
-  if (entry.operation === "DELETE") return t("activity.removed");
-  const before = entry.before_data || {};
-  const after = entry.after_data || {};
-  return ACTIVITY_FIELDS
-    .filter(([field]) => before[field] !== after[field])
-    .map(([field, labelKey]) => {
-      const label = t(labelKey);
-      if (field === "price") return `${label}: ${formatMoney(Number(before[field]), language)} → ${formatMoney(Number(after[field]), language)}`;
-      if (field === "photo_path") return t("activity.photoChanged");
-      if (field === "category") {
-        return `${label}: ${t(`category.${before[field]}`)} → ${t(`category.${after[field]}`)}`;
-      }
-      return `${label}: ${before[field]} → ${after[field]}`;
-    })
-    .join(" · ") || t("activity.productUpdated");
-}
-
 function AuthLoading({ language, onLanguageChange, t }) {
   return (
     <main className="auth-page">
@@ -161,7 +132,7 @@ export default function App() {
   const [recoveryMode, setRecoveryMode] = useState(false);
   const [products, setProducts] = useState([]);
   const [profiles, setProfiles] = useState({});
-  const [activity, setActivity] = useState([]);
+  const [movements, setMovements] = useState([]);
   const [movementTotals, setMovementTotals] = useState({ items_in: 0, items_out: 0 });
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(() => navigator.onLine);
@@ -171,6 +142,7 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
+  const [movementFilter, setMovementFilter] = useState("all");
   const [page, setPage] = useState("overview");
   const [panelOpen, setPanelOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -233,7 +205,7 @@ export default function App() {
     if (!session?.user) {
       setProducts([]);
       setProfiles({});
-      setActivity([]);
+      setMovements([]);
       setMovementTotals({ items_in: 0, items_out: 0 });
       setLoading(false);
       return undefined;
@@ -245,14 +217,14 @@ export default function App() {
     Promise.all([
       supabase.from("products").select("*").order("name"),
       supabase.from("profiles").select("id,display_name,email"),
-      supabase.from("inventory_activity")
-        .select("id,product_id,product_name,operation,before_data,after_data,actor_id,occurred_at")
+      supabase.from("inventory_stock_movements")
+        .select("id,product_id,product_name,sku,direction,quantity,stock_before,stock_after,actor_id,occurred_at")
         .order("occurred_at", { ascending: false })
         .limit(100),
       supabase.from("inventory_movement_totals").select("items_in,items_out").single(),
-    ]).then(([productResult, profileResult, activityResult, movementResult]) => {
+    ]).then(([productResult, profileResult, movementResult, totalsResult]) => {
       if (!active) return;
-      const failed = [productResult, profileResult, activityResult, movementResult].find((result) => result.error);
+      const failed = [productResult, profileResult, movementResult, totalsResult].find((result) => result.error);
       if (failed) throw failed.error;
       setProducts((productResult.data || []).map((product) => ({
         ...product,
@@ -260,10 +232,10 @@ export default function App() {
         photo: getProductPhotoUrl(product.photo_path),
       })));
       setProfiles(Object.fromEntries((profileResult.data || []).map((profile) => [profile.id, profile])));
-      setActivity(activityResult.data || []);
+      setMovements(movementResult.data || []);
       setMovementTotals({
-        items_in: Number(movementResult.data.items_in),
-        items_out: Number(movementResult.data.items_out),
+        items_in: Number(totalsResult.data.items_in),
+        items_out: Number(totalsResult.data.items_out),
       });
     }).catch((error) => {
       if (active) setLoadError(error.message || t("error.unableLoadInventory"));
@@ -313,6 +285,11 @@ export default function App() {
       return matchesQuery && matchesCategory && matchesStatus;
     });
   }, [products, query, category, status]);
+
+  const visibleMovements = useMemo(
+    () => movementFilter === "all" ? movements : movements.filter((movement) => movement.direction === movementFilter),
+    [movements, movementFilter]
+  );
 
   const openAdd = () => {
     setEditing(null);
@@ -499,7 +476,7 @@ export default function App() {
               {[
                 ["stock", Box, products.length, "page.stockLink"],
                 ["categories", Search, stats.categories, "page.categoryLink"],
-                ["activity", Activity, activity.length, "page.activityLink"],
+                ["activity", Activity, movements.length, "page.activityLink"],
               ].map(([target, Icon, count, labelKey]) => (
                 <button className="page-link card" onClick={() => navigate(target)} key={target}>
                   <span className="page-link__icon"><Icon size={21} /></span>
@@ -640,54 +617,88 @@ export default function App() {
                 <span className="muted small">{t("activity.movementTotals")}</span>
               </div>
               <div className="movement-stats">
-                <StatCard
-                  tone="green"
-                  icon={<ArrowDownLeft size={30} strokeWidth={2} />}
-                  label={t("activity.itemsIn")}
-                  value={movementTotals.items_in}
-                  hint={t("activity.itemsInHint")}
-                />
-                <StatCard
-                  tone="amber"
-                  icon={<ArrowUpRight size={30} strokeWidth={2} />}
-                  label={t("activity.itemsOut")}
-                  value={movementTotals.items_out}
-                  hint={t("activity.itemsOutHint")}
-                />
+                <button
+                  type="button"
+                  className={`movement-stat ${movementFilter === "in" ? "movement-stat--active" : ""}`}
+                  aria-pressed={movementFilter === "in"}
+                  onClick={() => setMovementFilter((filter) => filter === "in" ? "all" : "in")}
+                >
+                  <StatCard
+                    tone="green"
+                    icon={<ArrowDownLeft size={30} strokeWidth={2} />}
+                    label={t("activity.itemsIn")}
+                    value={movementTotals.items_in}
+                    hint={t("activity.itemsInHint")}
+                  />
+                </button>
+                <button
+                  type="button"
+                  className={`movement-stat ${movementFilter === "out" ? "movement-stat--active" : ""}`}
+                  aria-pressed={movementFilter === "out"}
+                  onClick={() => setMovementFilter((filter) => filter === "out" ? "all" : "out")}
+                >
+                  <StatCard
+                    tone="amber"
+                    icon={<ArrowUpRight size={30} strokeWidth={2} />}
+                    label={t("activity.itemsOut")}
+                    value={movementTotals.items_out}
+                    hint={t("activity.itemsOutHint")}
+                  />
+                </button>
               </div>
             </section>
 
-            <section className="card activity-card" aria-labelledby="activity-recent-title">
+            <section className="card activity-card" aria-labelledby="activity-movements-title">
               <div className="activity-card__head activity-card__head--recent">
                 <div>
                   <span className="eyebrow">{t("activity.team")}</span>
-                  <h2 id="activity-recent-title">{t("activity.recent")}</h2>
+                  <h2 id="activity-movements-title">{t("activity.movementList")}</h2>
+                  <span className="muted small">{t("activity.latestMovements")}</span>
                 </div>
-                <span className="activity-period">{t("activity.latest")}</span>
+                <div className="movement-filters" role="group" aria-label={t("activity.filterMovements")}>
+                  {["all", "in", "out"].map((filter) => (
+                    <button
+                      type="button"
+                      className={`movement-filter ${movementFilter === filter ? "movement-filter--active" : ""}`}
+                      aria-pressed={movementFilter === filter}
+                      onClick={() => setMovementFilter(filter)}
+                      key={filter}
+                    >
+                      {t(`activity.filter.${filter}`)}
+                    </button>
+                  ))}
+                </div>
               </div>
-              {activity.length === 0 ? (
-                <div className="empty">{t("activity.empty")}</div>
+              {visibleMovements.length === 0 ? (
+                <div className="empty">
+                  {movements.length === 0
+                    ? t("activity.noMovements")
+                    : t(`activity.noMovements.${movementFilter}`)}
+                </div>
               ) : (
-                <ol className="activity-list">
-                  {activity.map((entry) => {
-                    const actor = profiles[entry.actor_id];
+                <ol className="movement-list">
+                  {visibleMovements.map((movement) => {
+                    const actor = profiles[movement.actor_id];
                     const actorName = actor?.display_name || actor?.email || t("activity.unknownUser");
-                    const occurredAt = new Date(entry.occurred_at);
+                    const occurredAt = new Date(movement.occurred_at);
                     const locale = language === "fr" ? "fr-FR" : "en-US";
+                    const direction = movement.direction;
+                    const MovementIcon = direction === "in" ? ArrowDownLeft : ArrowUpRight;
                     return (
-                      <li className="activity-item" key={entry.id}>
-                        <div className="activity-item__icon"><Clock3 size={17} /></div>
-                        <div className="activity-item__body">
-                          <div className="activity-item__actor">
-                            <strong>{actorName}</strong>
-                            {actor?.email && actor.email !== actorName && (
-                              <span className="activity-item__email">{actor.email}</span>
-                            )}
-                          </div>
-                          <p className="activity-item__product">{entry.product_name}</p>
-                          <p className="activity-item__change">{activityDetails(entry, language, t)}</p>
+                      <li className="movement-item" key={movement.id}>
+                        <div className={`movement-item__icon movement-item__icon--${direction}`}>
+                          <MovementIcon size={19} />
                         </div>
-                        <time dateTime={entry.occurred_at}>
+                        <div className="movement-item__body">
+                          <div className="movement-item__product">
+                            <strong>{movement.product_name}</strong>
+                            {movement.sku && <span>{movement.sku}</span>}
+                          </div>
+                          <p>{t(`activity.units.${direction}`, { count: movement.quantity })}</p>
+                          <p>{t("activity.stockLevel", { before: movement.stock_before, after: movement.stock_after })}</p>
+                          <span className="movement-item__actor">{t("activity.changedBy", { name: actorName })}</span>
+                        </div>
+                        <time dateTime={movement.occurred_at}>
                           <span>{occurredAt.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}</span>
                           <span>{occurredAt.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" })}</span>
                         </time>

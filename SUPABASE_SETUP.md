@@ -16,7 +16,7 @@ ELECTRO BEJAAD uses one shared inventory for every authenticated user in a Supab
 
 5. Restart the Vite server after changing environment variables.
 
-The migration creates the shared products table, user profiles, an append-only activity log, photo storage rules, row-level security policies, and realtime subscriptions. It seeds the sample inventory only where a SKU does not already exist, so it is safe to run again.
+The migrations create the shared products table, user profiles, an append-only activity log, photo storage rules, row-level security policies, and realtime subscriptions. The stock-movement details migration adds a view that lists each recorded stock increase or decrease with its quantity and before/after stock levels. The app shows the latest 100 movements and lets you filter received and sent-out items from the Activity page. The initial migration seeds sample inventory only where a SKU does not already exist.
 
 The later `20261029020000_import_eb_shop_inventory.sql` migration imports the EB Shop spreadsheet inventory. It combines repeated product names, applies the workbook's `New Price` and `New Qty` formulas, and assigns import SKUs. ELECTRO BEJAAD displays all product prices in Moroccan dirhams (MAD/DH).
 
@@ -27,7 +27,7 @@ The later `20261029020000_import_eb_shop_inventory.sql` migration imports the EB
 3. In **Authentication → Users**, invite each team member by email. Do not add a public sign-up form to the app.
 4. Team members can use **Set or reset your password** on the sign-in screen to get a password link. After setting it, they can sign in with their invited email.
 
-Only invited, authenticated users can access the inventory. Every such user sees and can edit the same products. The database records the authenticated user, operation, product snapshot, and time for each create, edit, or delete; the app shows the latest 100 changes and identifies the last editor on each product. The stock-movement summary totals units received and sent out from recorded stock changes.
+Only invited, authenticated users can access the inventory. Every such user sees and can edit the same products. The database records the authenticated user, operation, product snapshot, and time for each create, edit, or delete; the app identifies the last editor on each product. The stock-movement summary totals units received and sent out from recorded stock changes.
 
 ## 3. Deploy
 
